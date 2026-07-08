@@ -1,0 +1,25 @@
+# Caches Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+ENV/
+dist/
+build/
+*.egg-info/
+
+# Fichiers de donnees et modeles lourds (a ne pas commiter sur GitHub)
+features/
+models/
+
+# Fichiers de configuration IDE et OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

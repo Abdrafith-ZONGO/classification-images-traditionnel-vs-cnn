@@ -1,0 +1,34 @@
+# Ignorer les dossiers contenant de lourdes données ou modèles générés
+Datasets/
+Projet_Final_Classification/features/
+Projet_Final_Classification/models/
+
+# Ignorer tous les fichiers de données (images, vidéos, bases de données, modèles)
+*.mp4
+*.avi
+*.mkv
+*.npy
+*.pth
+*.pt
+*.pkl
+*.h5
+*.keras
+*.csv
+*.db
+*.sqlite
+*.zip
+*.tar.gz
+*.rar
+
+# Caches Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+ENV/
