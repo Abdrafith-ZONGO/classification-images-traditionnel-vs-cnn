@@ -1,239 +1,324 @@
-# Rapport de Projet : Classification d'Images
+# RAPPORT DE PROJET FINAL : CLASSIFICATION D'IMAGES
+## Comparaison Systematique entre Apprentissage Automatique Traditionnel (Transfer Learning) et Reseaux de Neurones Convolutifs (CNN) Personnalises
 
-**Etudiant** : Abdrafith ZONGO  
-**Depot GitHub** : [classification-images-traditionnel-vs-cnn](https://github.com/Abdrafith-ZONGO/classification-images-traditionnel-vs-cnn.git)  
-**Module** : Reseaux de Neurones Artificiels  
-
----
-
-## 1. Introduction
-La classification d'images consiste a attribuer automatiquement une ou plusieurs etiquettes a une image en fonction de son contenu visuel. Ce domaine a ete revolutionne par l'arrivee de l'apprentissage profond (Deep Learning), mais les approches de Machine Learning traditionnel restent tres pertinentes dans de nombreux contextes applicatifs. 
-
-Ce projet propose de comparer systematiquement deux approches fondamentales :
-- **Le Pipeline 1 (Traditionnel)** : on extrait les caracteristiques (features) des images a l'aide de modeles convolutifs profonds pre-entraines sur ImageNet (AlexNet, VGG16, InceptionV3), puis on entraine des classifieurs classiques (SVM, k-NN, Arbre de Decision, Naive Bayes) sur ces vecteurs.
-- **Le Pipeline 2 (Apprentissage Profond)** : on entraine un reseau de neurones convolutif (CNN) personnalise directement sur les images brutes, sans extraction intermediaire de caracteristiques.
-
-Cette comparaison est realisee sur quatre jeux de donnees varies : DTD (textures), Iris Flowers (fleurs), COVID-19 X-Ray (radiographies pulmonaires) et Wildfire Satellite Images (images satellites d'incendies).
+**Etudiant :** Abdrafith ZONGO  
+**Module :** Reseaux de Neurones Artificiels (RNA)  
+**Master :** M1 - Vision par Ordinateur et Intelligence Artificielle (VOIA)  
+**Depot GitHub :** [classification-images-traditionnel-vs-cnn](https://github.com/Abdrafith-ZONGO/classification-images-traditionnel-vs-cnn.git)  
 
 ---
 
-## 2. Problematique
-L'apprentissage profond offre des precisions exceptionnelles, mais necessite d'importantes ressources de calcul (GPU) et des bases de donnees de grande taille pour eviter le surapprentissage (overfitting). A l'inverse, l'apprentissage traditionnel sur caracteristiques pre-extraites est extremement leger et rapide a entrainer.
+## INTRODUCTION
 
-Ce projet cherche a repondre aux questions suivantes :
-- Quel est le compromis exactitude / temps de calcul entre un CNN entraine a partir de zero et des classifieurs classiques couples a du transfert d'apprentissage ?
-- Quelle approche est la plus viable selon la taille du dataset et les contraintes de calcul du materiel cible (notamment en utilisation CPU) ?
+La classification d'images constitue l'un des piliers fondamentaux de la vision par ordinateur moderne. Ses applications couvrent des domaines critiques tels que l'imagerie medicale (detection de pathologies), l'observation de la Terre par satellites (suivi environnemental), et l'intelligence artificielle generale. Historiquement, la classification reposait sur des pipelines composes de deux phases distinctes : l'extraction de descripteurs visuels fabriques a la main (comme SIFT ou HOG) suivie de la classification par des algorithmes classiques (SVM, k-NN, etc.). 
 
----
+L'avenement du Deep Learning a completement bouleverse ce paradigme en unifiant ces deux phases au sein d'une architecture unique : les Reseaux de Neurones Convolutifs (CNN), capables d'apprendre conjointement les représentations visuelles et le critere de decision.
 
-## 3. Jeux de Donnes Utilises
-Notre protocole experimental s'appuie sur quatre bases d'images :
-- **Iris Flowers** (421 images, 3 classes) : Petit jeu de donnees contenant des images de trois varietes de fleurs d'Iris (Setosa, Versicolor, Virginica).
-- **COVID-19 X-Ray** (743 images, 2 classes) : Images medicales de radiographies thoraciques reparties en deux classes (CT_COVID et CT_NonCOVID).
-- **Wildfire Satellite Images** (1 832 images, 2 classes) : Images satellites de zones forestieres classees selon la presence d'incendie (fire et nofire).
-- **DTD** (540 images, 9 classes) : Echantillon de la base Describable Textures Dataset comprenant 9 categories d'animaux sauvages (antelope, badger, butterfly, cat, chimpanzee, cow, dragonfly, eagle, elephant).
+Ce projet propose une evaluation critique et comparative de ces deux approches. Nous etudions et mettons en concurrence :
+1. **Pipeline 1 (Apprentissage Traditionnel par Transfer Learning) :** Nous exploitons des modeles convolutifs profonds de pointe pre-entraines sur la base geante ImageNet (**AlexNet**, **VGG16**, et **InceptionV3**) en tant qu'extracteurs de caracteristiques universels (embeddings). Ces vecteurs de caracteristiques de haute dimension sont ensuite passes a des classifieurs classiques (**Machine a Vecteurs de Support (SVM)**, **k-Plus Proches Voisins (k-NN)**, **Arbre de Decision**, et **Naïve Bayes**).
+2. **Pipeline 2 (Apprentissage Profond direct) :** Nous concevons et entrainons completement a partir de zero (from scratch) un reseau de neurones convolutif personnalise (**CNNPerso**) sur les images brutes sans extraction prealable.
+
+L'analyse comparative est menee sur quatre jeux de donnees reels et varies pour eprouver la generalisation des modeles : **Iris Flowers**, **COVID-19 X-Ray**, **Wildfire Satellite Images**, et **DTD** (Describable Textures Dataset).
 
 ---
 
-## 4. Architecture Globale du Projet
+## 1. PROBLEMATIQUE ET ENJEUX DE L'ETUDE
 
-Le projet est organise de facon modulaire pour separer la configuration, le chargement des donnees, l'extraction de caracteristiques, l'entrainement des modeles et l'analyse des resultats.
+La comparaison entre le Transfer Learning et l'entrainement From Scratch souleve des questions technologiques et economiques cruciales :
+- **Le compromis exactitude / volume de donnees :** Un reseau de neurones profond possede des millions de parametres qui necessitent en theorie des volumes de donnees consequents pour converger sans surapprentissage. Le Transfer Learning permet-il de s'affranchir de cette contrainte sur de tres petits datasets ?
+- **L'empreinte et le cout de calcul (CPU vs GPU) :** L'apprentissage profond de bout en bout necessite d'ajuster l'ensemble des poids du reseau par retropropagation du gradient, un processus extremement lourd. Les methodes traditionnelles sur features pre-extraites offrent-elles un avantage decisif en temps de calcul, notamment pour des environnements contraints (utilisation CPU) ?
+- **Taille de stockage et deploiement embarque :** Quel est l'impact de la taille memoire finale des modeles sur les possibilites d'integration dans des systemes embarques (drones, smartphones) ?
 
-### 4.1. Arborescence des Fichiers
-```
+---
+
+## 2. PRESENTATION DES JEUX DE DONNEES ET PRETRAITEMENTS
+
+Nous analysons quatre bases de donnees aux caracteristiques structurelles distinctes :
+
+1. **Iris Flowers (421 images, 3 classes) :** Contient des images de fleurs d'Iris reparties en trois varietes (*Setosa*, *Versicolor*, *Virginica*). Ce dataset pose le defi du tres faible volume de donnees et de la forte ressemblance entre les classes Versicolor et Virginica.
+2. **COVID-19 X-Ray (743 images, 2 classes) :** Images medicales de radiographies thoraciques reparties en deux classes (*CT_COVID* et *CT_NonCOVID*). Il s'agit d'un domaine ou la precision de la classification est cruciale et les textures pulmonaires subtiles.
+3. **Wildfire Satellite Images (1 832 images, 2 classes) :** Images satellites de zones forestieres classees selon la presence ou l'absence de feux (*fire* et *nofire*). C'est notre plus grand dataset, presentant de forts contrastes de couleur.
+4. **DTD (540 images, 9 classes) :** Echantillon de textures complexes d'animaux sauvages structure en 9 classes (*antelope*, *badger*, *butterfly*, *cat*, *chimpanzee*, *cow*, *dragonfly*, *eagle*, *elephant*). Il represente un cas de figure tres complexe : peu d'images par classe et un nombre de classes eleve.
+
+### Protocoles de Nettoyage et de Pretraitement :
+- **Nettoyage automatique :** Un filtrage programmatique rigoureux est effectue pour exclure les repertoires et fichiers parasites presents dans les dossiers sources (comme le dossier `INF5082` present dans le dossier Iris). De plus, chaque image est lue par PIL et validee par la fonction `.verify()` pour ecarter les images corrompues.
+- **Split stratifie :** Pour tous les jeux de donnees, les images sont separees en **70% pour l'entrainement** et **30% pour le test**. La stratification garantit que la proportion de chaque classe est rigoureusement preservee dans les deux ensembles.
+- **Redimensionnement et Normalisation standard :** Les images sont redimensionnees en $224 \times 224$ pour VGG16/AlexNet, $299 \times 299$ pour InceptionV3, et $128 \times 128$ pour notre CNN perso. Elles sont converties en tenseurs et normalisees selon les moyennes et ecarts-types de reference d'ImageNet : `mean=[0.485, 0.456, 0.406]` et `std=[0.229, 0.224, 0.225]`.
+- **Augmentation de donnees :** Pour entrainer le CNN du Pipeline 2, nous appliquons de l'augmentation de donnees (retournement horizontal aleatoire, rotation jusqu'a 15 degres, et legere variation de luminosite/contraste via `ColorJitter`) sur l'ensemble d'entrainement pour ameliorer la robustesse et eviter le surapprentissage.
+
+---
+
+## 3. DESCRIPTION ARCHITECTURALE DES MODELES ET EXTRACTEURS
+
+Afin de justifier pleinement notre demarche, nous detaillons ici la structure des architectures convolutives exploitees.
+
+### 3.1. Modeles pre-entraines (Pipeline 1)
+Ces modeles ont ete entraines sur le dataset ImageNet et possedent des filtres convolutifs pre-optimises de bas niveau (contours, couleurs) et de haut niveau (formes complexes).
+
+*   **VGG16 (138 millions de parametres) :** Developpe par le *Visual Geometry Group* d'Oxford, ce modele se caracterise par une architecture tres homogene utilisant de petits filtres de convolution de $3 \times 3$ empiles en cascade avec des convolutions successives de profondeur croissante ($64, 128, 256, 512$ filtres) separees par des couches de Max Pooling. La force de VGG16 reside dans sa capacite a capter des representations tres riches au prix d'un poids memoire consequent (plus de 500 Mo sur le disque).
+*   **AlexNet (61 millions de parametres) :** Reseau pionnier du Deep Learning (vainqueur d'ImageNet 2012), il utilise des filtres de convolution de grande taille lors des premieres couches ($11 \times 11$ puis $5 \times 5$) associes a des activations ReLU et du MaxPooling. Moins profond que VGG16, il represente une option plus legere mais possede neanmoins 61 millions de parametres, majoritairement situes dans ses premieres couches fully connected.
+*   **InceptionV3 (27 millions de parametres) :** Concu par Google, ce reseau introduit les modules "Inception". Au lieu d'empiler les convolutions de maniere sequentielle, Inception applique des convolutions de tailles differentes ($1 \times 1, 3 \times 3, 5 \times 5$) en parallele a chaque etape et concatene leurs sorties. Cela lui permet de capter des motifs visuels a des echelles variees tout en visant un nombre de parametres reduit (environ 108 Mo).
+
+### 3.2. Reseau Convolutif Personnalise CNNPerso (Pipeline 2)
+Notre reseau a ete dimensionne pour s'adapter a notre taille d'image ($128 \times 128$) tout en limitant le risque d'overfitting.
+*   **Structure et dimensionnement :**
+    1.  *Bloc Convolutif 1 :* Conv2D (3 canaux vers 32 filtres $3 \times 3$) + Batch Normalization + ReLU + MaxPool2d (sortie : $32 \times 64 \times 64$).
+    2.  *Bloc Convolutif 2 :* Conv2D (32 vers 64 filtres $3 \times 3$) + Batch Normalization + ReLU + MaxPool2d (sortie : $64 \times 32 \times 32$).
+    3.  *Bloc Convolutif 3 :* Conv2D (64 vers 128 filtres $3 \times 3$) + Batch Normalization + ReLU + MaxPool2d (sortie : $128 \times 16 \times 16$).
+    4.  *Bloc Convolutif 4 :* Conv2D (128 vers 256 filtres $3 \times 3$) + Batch Normalization + ReLU + MaxPool2d (sortie : $256 \times 8 \times 8$).
+    5.  *Couche Fully Connected 1 :* Aplatissement (Flatten) vers 512 neurones denses, avec BatchNorm, ReLU, et une couche de **Dropout** reglee a 50% (desactivation aleatoire).
+    6.  *Couche de Sortie :* Couche lineaire finale de 512 neurones vers $N$ classes cibles.
+*   **Nombre de parametres :** **8\,780\,546 parametres** (environ 35 Mo sur le disque).
+
+---
+
+## 4. ARCHITECTURE LOGICIELLE ET DESCRIPTION DU CODE
+
+### 4.1. Schéma d'Architecture de l'Application
+
+```text
 Projet_Final_Classification/
-│
-├── main.py                     # Script d'orchestration global
-├── requirements.txt            # Liste des dependances Python necessaires
-├── Rapport_Projet_Final.pdf    # Rapport complet au format PDF
-├── Projet_Final_Notebook.ipynb # Notebook interactif pour la demonstration
-│
-├── src/                        # Code source du projet
-│   ├── config.py               # Centralisation des parametres et constantes
-│   ├── dataset.py              # Chargement, nettoyage et pretraitement des images
-│   ├── extractors.py           # Chargement des reseaux de neurones et extraction de features
-│   ├── models_traditional.py   # Definition et entrainement des classifieurs classiques
-│   ├── models_cnn.py           # Definition de l'architecture et boucle du CNN perso
-│   └── utils.py                # Fonctions d'affichage et de sauvegarde des graphiques
-│
-├── features/                   # Cache des caracteristiques extraites (fichiers .npy)
-├── models/                     # Modeles entraines sauvegardes (.pkl et .pth)
-└── reports/                    # Graphiques, courbes ROC et tableaux de resultats
+├── src/                      : Dossier du code source modulaire
+│   ├── config.py             : Configuration globale et chemins
+│   ├── dataset.py            : Lecture, split 70/30 et loaders
+│   ├── extractors.py         : Extracteurs VGG16/AlexNet/InceptionV3
+│   ├── models_traditional.py : Classifieurs classiques (SVM, k-NN)
+│   ├── models_cnn.py         : Réseau personnalisé CNNPerso
+│   └── utils.py              : Tracé des ROC et matrices
+├── features/                 : Cache des features extraites (.npy)
+├── models/                   : Poids (.pth) et classifieurs (.pkl)
+├── reports/                  : Matrices et graphiques de performance
+├── main.py                   : Script principal (orchestration CLI)
+├── Projet_Final_Notebook.ipynb : Notebook interactif pas à pas
+├── requirements.txt          : Bibliothèques Python requises
+├── README.txt                : Instructions d'installation et usage
+├── Rapport_Projet_Final.md   : Version Markdown du rapport
+└── Rapport_Projet_Final.docx : Version Word en Times New Roman
 ```
 
-### 4.2. Role des Fichiers et Fonctions Principales
+### 4.2. Rôle des Fichiers et Fonctions Principales
 
-#### 4.2.1. Fichier `src/config.py`
-Ce fichier centralise tous les parametres globaux pour garantir la reproductibilite des tests.
-- `SEED` : Graine aleatoire (fixee a 42) pour que les separations de donnees et les initialisations de reseaux soient les memes a chaque execution.
-- `DEVICE` : Selection automatique de la carte graphique (CUDA GPU) si elle est disponible, sinon utilisation du processeur (CPU).
-- `DATASET_PATHS` et `DATASET_CLASSES` : Chemins vers les bases de donnees et listes des repertoires autorises. Cela permet d'exclure programmatiquement les sous-dossiers parasites (comme le dossier "INF5082" pour Iris).
-- `TAILLE_IMAGE_VGG_ALEX` (224), `TAILLE_IMAGE_INCEPTION` (299), `TAILLE_IMAGE_CNN` (128) : Tailles de redimensionnement requises pour chaque architecture.
+#### 4.2.1. Fichier `src/config.py` (Configuration globale)
+Ce script centralise l'ensemble des constantes, des repertoires d'entree/sortie, et des hyperparametres pour assurer la reproductibilite parfaite des experiences.
+*   **Variables globales :**
+    *   `SEED = 42` : Graine aleatoire.
+    *   `DEVICE` : Selection automatique de CUDA GPU ou CPU.
+    *   `DATASET_PATHS` : Chemins des datasets.
+    *   `DATASET_CLASSES` : Classes valides par dataset.
+    *   `TAILLE_IMAGE_VGG_ALEX` (224), `TAILLE_IMAGE_INCEPTION` (299), `TAILLE_IMAGE_CNN` (128).
+    *   `FEATURES_DIR`, `MODELS_DIR`, `REPORTS_DIR`.
+    *   `BATCH_SIZE = 32`, `EPOCHS = 15`, `LEARNING_RATE = 0.001`, `PROPORTION_TEST = 0.3`.
 
-#### 4.2.2. Fichier `src/dataset.py`
-Il gere la preparation des images sous forme de loaders PyTorch.
-- `obtenir_transforms(taille_image, augmentation)` : Prepare les transformations d'images (redimensionnement, normalisation ImageNet). Si l'augmentation est activee (pour l'entrainement du CNN), on ajoute des retournements horizontaux et des rotations aleatoires pour eviter le surapprentissage.
-- `ImageDatasetCustom` : Classe de Dataset personnalisee chargee de lire les images sur le disque en mode RGB.
-- `collecter_donnees_dataset(nom_dataset)` : Parcourt les dossiers valides, verifie l'integrite de chaque image (`PIL.Image.verify()`) et renvoie les chemins de fichiers propres.
-- `preparer_loaders(nom_dataset, taille_image)` : Applique un decoupage stratifie (stratified split) de 70% pour l'entrainement et 30% pour le test, puis cree les chargeurs (`DataLoader`) correspondants.
+#### 4.2.2. Fichier `src/dataset.py` (Gestion des donnees)
+Prend en charge le pretraitement des images et la creation des DataLoaders.
+*   **Fonction `obtenir_transforms(taille_image, augmentation=False)` :**
+    *   *Arguments :* `taille_image` (int), `augmentation` (bool).
+    *   *Retourne :* `transforms.Compose` (PyTorch). Normalise les pixels selon les moyennes et ecarts-types de reference d'ImageNet. Si `augmentation=True`, integre des transformations geometriques (flips, rotations, contrastes) pour regulariser l'entrainement.
+*   **Classe `ImageDatasetCustom(Dataset)` :**
+    *   *Role :* Heritage de la classe `Dataset` de PyTorch. Ouvre les fichiers images sous format RGB, applique les transformations et renvoie le tenseur d'image couple au label.
+*   **Fonction `collecter_donnees_dataset(nom_dataset)` :**
+    *   *Arguments :* `nom_dataset` (str).
+    *   *Role :* Parcourt les sous-dossiers, verifie l'extension et filtre les images corrompues avec `PIL.Image.open().verify()`.
+    *   *Retourne :* Liste de chemins d'images valides, liste de labels et classes autorisees.
+*   **Fonction `preparer_loaders(nom_dataset, taille_image, batch_size=BATCH_SIZE, test_size=PROPORTION_TEST)` :**
+    *   *Arguments :* `nom_dataset` (str), `taille_image` (int), `batch_size` (int), `test_size` (float).
+    *   *Role :* Split stratifie (70% train / 30% test) preservant la proportion des classes. Retourne les DataLoaders d'entrainement et de test.
 
-#### 4.2.3. Fichier `src/extractors.py`
-Gere l'extraction des caracteristiques grace aux modeles pre-entraines de PyTorch.
-- `charger_modele_preentraine(nom_modele)` : Telecharge AlexNet, VGG16 ou InceptionV3 pre-entraines sur ImageNet, puis remplace leur derniere couche par `nn.Identity()` pour desactiver la classification.
-- `extraire_features(modele, loader)` : Fait passer les images dans le reseau en mode evaluation (sans gradients) pour en recuperer les représentations vectorielles.
-- `obtenir_features_dataset(nom_dataset, nom_modele)` : Coordonne le processus et stocke les vecteurs sous forme de fichiers binaire `.npy` (ex: `feat_train_Iris_VGG16.npy`). Si les fichiers existent deja sur le disque, ils sont recharges directement sans refaire les calculs.
+#### 4.2.3. Fichier `src/extractors.py` (Extraction des caracteristiques)
+Ce script convertit les modeles convolutifs pre-entraines profonds en extracteurs de caracteristiques statiques.
+*   **Fonction `charger_modele_preentraine(nom_modele)` :**
+    *   *Arguments :* `nom_modele` (str).
+    *   *Role :* Telecharge le modele de reference (AlexNet, VGG16 ou InceptionV3) pre-entraine sur ImageNet, puis remplace la derniere couche fully connected par une couche `nn.Identity()` pour bloquer la classification.
+    *   *Retourne :* Le modele en mode `eval()` (dropout et batchnorm desactives) et la dimension du vecteur de sortie.
+*   **Fonction `extraire_features(modele, loader)` :**
+    *   *Arguments :* `modele` (nn.Module), `loader` (DataLoader).
+    *   *Role :* Forward pass sous `torch.no_grad()` pour toutes les images du loader. Aplatit les matrices tridimensionnelles intermediaires en longs vecteurs.
+    *   *Retourne :* Deux tableaux numpy `X` (features) et `y` (labels).
+*   **Fonction `obtenir_features_dataset(nom_dataset, nom_modele, forcer_reextraction=False)` :**
+    *   *Arguments :* `nom_dataset` (str), `nom_modele` (str), `forcer_reextraction` (bool).
+    *   *Role :* Cree un cache des features sous forme de fichiers binaire `.npy` dans `features/` (ex: `feat_train_Iris_VGG16.npy`). Si les fichiers existent deja sur le disque et que la re-extraction n'est pas forcee, recharge directement les features sans relancer le reseau.
 
-#### 4.2.4. Fichier `src/models_traditional.py`
-Contient la logique d'apprentissage classique sur les features extraites.
-- `obtenir_grille_parametres(nom_classifieur)` : Contient les dictionnaires d'hyperparametres a tester.
-- `instancier_classifieur_base(nom_classifieur)` : Instancie le SVM, le k-NN, l'Arbre de Decision ou le Naive Bayes de scikit-learn.
-- `entrainer_evaluer_classique(...)` : Normalise les donnees avec un `StandardScaler`, puis effectue une recherche sur grille avec validation croisee (`GridSearchCV` en 3 folds) pour determiner les meilleurs reglages du classifieur. Sauvegarde le modele entraine sous format `.pkl`.
+#### 4.2.4. Fichier `src/models_traditional.py` (Classifieurs classiques)
+Definit l'apprentissage classique sur les features pre-extraites.
+*   **Fonction `obtenir_grille_parametres(nom_classifieur)` :**
+    *   *Arguments :* `nom_classifieur` (str).
+    *   *Role :* Renvoie les dictionnaires de recherche pour `GridSearchCV` afin d'optimiser les parametres de regularisation ($C$), de lissage ($var\_smoothing$), de voisinage ($k$) ou de decoupement ($max\_depth$).
+*   **Fonction `instancier_classifieur_base(nom_classifieur)` :**
+    *   *Role :* Renvoie le modele scikit-learn brut. Force le parametre `probability=True` pour le SVM pour autoriser le calcul des probabilites indispensables au trace des courbes ROC.
+*   **Fonction `entrainer_evaluer_classique(nom_dataset, nom_modele_extraction, nom_classifieur, X_train, y_train, X_test, y_test, optimiser=True)` :**
+    *   *Role :* Applique un standardiseur `StandardScaler` pour centrer et reduire les caracteristiques. Lance un `GridSearchCV` en 3-fold cross validation. Calcule les metriques de performance (Accuracy, Precision, Recall, F1-score) et mesure le temps d'entrainement pur.
+    *   *Sauvegarde :* Enregistre un dictionnaire contenant le meilleur modele final, le scaler associe, les hyperparametres optimaux et les scores dans un fichier `.pkl` dans `models/`.
 
-#### 4.2.5. Fichier `src/models_cnn.py`
-Contient le code de notre reseau convolutif personnalise.
-- `CNNPerso` : Reseau construit a partir de zero avec 4 couches convolutives.
-- `entrainer_evaluer_cnn(...)` : Entraine le reseau sur les images brutes pendant un nombre d'epoques donne (par defaut 15) en utilisant l'optimiseur Adam et la fonction de perte CrossEntropyLoss. Sauvegarde les poids finaux du modele dans un fichier `.pth`.
+#### 4.2.5. Fichier `src/models_cnn.py` (Réseau de Neurones Convolutif Personnalise)
+Definit l'architecture de notre reseau convolutionnel et sa boucle d'apprentissage.
+*   **Classe `CNNPerso(nn.Module)` :**
+    *   *Architecture :* Decrite dans la section 3.2.
+*   **Fonction `entrainer_evaluer_cnn(...)` :**
+    *   *Role :* Boucle d'entrainement standard sur le nombre d'epoques specifie. Utilise `CrossEntropyLoss` et `Adam`. Evalue le modele sur le jeu de test a chaque fin d'epoque pour enregistrer l'historique de validation et sauvegarde les poids finaux (`.pth`) dans `models/`.
 
-#### 4.2.6. Fichier `src/utils.py`
-Gere la creation automatique de toutes les visualisations graphiques.
-- `tracer_courbes_apprentissage` : Genere les courbes de perte (Loss) et d'exactitude (Accuracy) pour l'entrainement du CNN.
-- `tracer_matrice_confusion` : Dessine et sauvegarde les matrices de confusion sous forme de cartes thermiques avec Seaborn.
-- `tracer_courbe_roc` : Trace les courbes ROC et calcule l'AUC (gère le cas binaire et l'approche One-vs-Rest pour le multi-classes).
-- `tracer_comparaison_globale` : Genere les deux graphiques de synthese de fin de projet (graphique par dataset et classement final).
+#### 4.2.6. Fichier `src/utils.py` (Affichages et traces graphiques)
+*   **`tracer_courbes_apprentissage` :** Trace la perte (Loss) et l'exactitude (Accuracy) du CNN.
+*   **`tracer_matrice_confusion` :** Genere les diagrammes de confusion avec Seaborn.
+*   **`tracer_courbe_roc` :** Genere les courbes ROC (cas binaire et approche One-vs-Rest en calculant la macro-moyenne des aires sous la courbe AUC).
+*   **`tracer_comparaison_globale` :** Dessine le diagramme general de synthese des precisions par dataset et classement final.
+
+#### 4.2.7. Fichier `main.py` (Script d'orchestration)
+Script principal d'orchestration en ligne de commande. Il coordonne l'appel des pipelines classiques et du CNN pour les datasets choisis, genere les visualisations et ecrit un fichier CSV global (`reports/comparaison_globale.csv`) avec l'ensemble des scores recoltes.
 
 ---
 
-## 5. Methodologie et Pipelines de Classification
+## 5. METHODOLOGIE ET JUSTIFICATIONS TECHNIQUES
 
-```
-   PIPELINE 1 : Apprentissage Traditionnel
-   Images Brutes -> Pretraitement -> Modeles pre-entraines -> Fichiers .npy -> StandardScaler -> GridSearchCV (Classifieurs) -> Modele Final .pkl
-
-   PIPELINE 2 : Apprentissage Profond
-   Images Brutes -> Pretraitement (avec Data Augmentation) -> CNN Personnalise (4 blocs Conv) -> Entrainement (CrossEntropy/Adam) -> Modele Final .pth
-```
-
-### 5.1. Protocoles de Pretraitement
-Chaque image subit les operations suivantes avant d'entrer dans un modele :
-- Redimensionnement selon le modele cible (224x224, 299x299 ou 128x128).
-- Conversion en tenseur PyTorch.
-- Normalisation basee sur la moyenne `[0.485, 0.456, 0.406]` et l'ecart-type `[0.229, 0.224, 0.225]` d'ImageNet.
-
-### 5.2. Justifications Techniques
-- **StandardScaler pour le SVM et le k-NN** : Les algorithmes calculant des distances (comme le k-NN ou le SVM a noyaux) sont tres sensibles a l'echelle des caracteristiques. Centrer et reduire les caracteristiques garantit que toutes les dimensions du vecteur contribuent de maniere equitable au calcul.
-- **Noyau RBF pour le SVM** : Le noyau RBF (Radial Basis Function) permet de projeter nos vecteurs de caracteristiques de maniere non lineaire dans un espace de dimension infinie, facilitant ainsi la separation de classes complexes qui ne seraient pas separables avec une simple frontiere lineaire.
-- **Optimisation par Validation Croisee (GridSearchCV)** : Elle permet de trouver de maniere rigoureuse le meilleur compromis de parametres (comme le nombre de voisins $k$ pour le k-NN ou la force de regularisation $C$ pour le SVM) sans risquer de surapprendre sur l'ensemble de test, puisque les performances sont validees sur des sous-ensembles d'entrainement.
-
-### 5.3. Conception du CNN Personnalise
-L'architecture de notre `CNNPerso` est definie ainsi :
-- **Bloc 1** : Conv2D (3 vers 32 filtres, 3x3) + BatchNorm + ReLU + MaxPool (2x2)
-- **Bloc 2** : Conv2D (32 vers 64 filtres, 3x3) + BatchNorm + ReLU + MaxPool (2x2)
-- **Bloc 3** : Conv2D (64 vers 128 filtres, 3x3) + BatchNorm + ReLU + MaxPool (2x2)
-- **Bloc 4** : Conv2D (128 vers 256 filtres, 3x3) + BatchNorm + ReLU + MaxPool (2x2)
-- **Couche Fully Connected** : Aplatissement (Flatten) + Lineaire (512 neurones) + BatchNorm + ReLU + Dropout (50%) + Lineaire de sortie (taille egale au nombre de classes).
-
-*Justification de l'architecture* : L'augmentation progressive de la profondeur (32 a 256 filtres) permet de capturer des formes de plus en plus abstraites. La Batch Normalization stabilise les valeurs a chaque couche pour accelerer la convergence, et la couche de Dropout a 50% evite que le classifieur dense n'apprenne les images d'entrainement par coeur (surapprentissage).
+Plusieurs choix de conception ont ete effectues pour assurer la fiabilite des resultats :
+- **Pourquoi normaliser avec `StandardScaler` ?** Les algorithmes classiques (comme le SVM ou le k-NN) dependent fortement du calcul de distances geometriques. Si certaines dimensions des features issues de VGG16 (dimension 4096) presentent des ecarts ou des amplitudes disproportionnees, elles domineraient injustement le calcul. Le standardiseur recentre la distribution a une moyenne de 0 et un ecart-type de 1.
+- **Pourquoi le noyau RBF pour le SVM ?** Le noyau RBF (Radial Basis Function) permet de separer les donnees projetees dans un espace non lineaire de dimension infinie. C'est l'approche ideale quand les classes ne sont pas separables lineairement dans l'espace d'origine.
+- **Pourquoi la validation croisee (GridSearchCV) ?** Optimiser les hyperparametres ($k$ pour le k-NN, $C$ et le noyau pour le SVM) directement sur l'ensemble de test biaise l'evaluation (data leakage). En effectuant une recherche sur grille validee par 3 sous-ensembles (3-fold cross validation) sur le train, nous garantissons l'integrite de l'ensemble de test.
+- **Pourquoi concevoir le CNN ainsi (BatchNorm + Dropout) ?** Les modeles de Deep Learning ont tendance a surapprendre sur de petites bases. La Batch Normalisation a chaque bloc convolutif stabilise les activations intermediaires, accelerant ainsi la convergence. Le Dropout (50%) force le reseau a ne pas dependre d'une unique combinaison de neurones pour decider, ameliorant ainsi le taux de generalisation.
 
 ---
 
-## 6. Resultats Experimentaux et Analyses
+## 6. JEUX DE LIVRABLES ET ELEMENTS DU DOSSIER DE SOUMISSION
 
-L'ensemble des modeles a ete entraine et evalue de maniere rigoureuse. Les resultats ci-dessous decoulent des executions completes stockees dans `reports/comparaison_globale.csv`.
+Afin de repondre scrupuleusement aux criteres d'evaluation, le dossier de soumission a ete structure sous la forme d'une archive compressee (`Projet_Final_Classification.zip`) contenant les elements suivants :
 
-### 6.1. Tableau Recapitulatif des Performances
+1.  **Le Rapport PDF Complet (`Rapport_Projet_Final.pdf`) :** Ce document de synthese universitaire, exporte en format standard PDF et mis en page en police classique **Times New Roman**.
+2.  **Le Notebook Interactif de Demonstration (`Projet_Final_Notebook.ipynb`) :** Notebook Jupyter complet destine a l'evaluation interactive. Il contient :
+    *   La detection materielle du GPU/CPU.
+    *   L'exploration visuelle rapide et la verification des donnees.
+    *   L'execution isolee du Pipeline 1 (extraction via AlexNet et classification via SVM).
+    *   L'entrainement et l'affichage des courbes d'apprentissage de notre CNN sur 10 epoques pour demonstration.
+    *   Le chargement du tableau comparatif general et l'interpretation des resultats.
+3.  **Les Scripts Python Sources (`src/`) et le Point d'Entree Principal (`main.py`) :** Code source modulaire et documente pour le nettoyage, l'extraction de features, l'entrainement classique et convolutionnel, et la generation des graphiques.
+4.  **Les Modeles Entraines Sauvegardes (`models/`) :** Contient les modeles de classification classiques optimises au format `.pkl` (joblib) ainsi que les poids finaux de notre CNN au format `.pth` (PyTorch) pour chaque dataset.
+5.  **Les Features Extraites (`features/`) :** Les tableaux numpy binaires au format `.npy` stockant l'ensemble des vecteurs de caracteristiques (train et test) generes pour chaque dataset et extracteur.
+6.  **Le Fichier de Configuration de l'Environnement (`requirements.txt`) :** Specifie les bibliotheques Python indispensables (torch, torchvision, scikit-learn, matplotlib, pandas, etc.) avec leurs versions de compatibilite.
+7.  **Le Fichier d'Instructions Principal (`README.txt`) :** Fichier d'accueil au format texte simple decrivant precisement la structure du projet, le protocole d'installation et les commandes de lancement des pipelines.
+8.  **La Video de Demonstration (Obligatoire, 2-3 minutes) :** Fichier video dynamique presentant l'execution rapide du projet, le fonctionnement du notebook interactif et la synthese visuelle des resultats.
 
-| Dataset | Pipeline | Modele | Accuracy (%) | Precision (%) | Recall (%) | F1-Score (%) | Temps Entr. (s) | Parametres |
+---
+
+## 7. RESULTATS EXPERIMENTAUX COMPLETS
+
+Voici le tableau recapitulatif de l'ensemble des modeles evalues sur les 4 datasets (donnees issues des runs reels sauvegardes dans `reports/comparaison_globale.csv`) :
+
+| Dataset | Pipeline | Modèle et Configuration | Accuracy (%) | Precision (%) | Recall (%) | F1-Score (%) | Temps Entr. (s) | Paramètres |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Iris** | Pipeline 1 | SVM (via AlexNet) | 57.5% | 55.5% | 57.5% | 56.1% | 70.77 | 61,100,840 |
-| | Pipeline 1 | k-NN (via VGG16) | **66.9%** | 78.2% | 66.9% | 56.4% | 2.28 | 138,357,544 |
-| | Pipeline 2 | CNN Personnalise | 63.8% | 59.6% | 63.8% | 58.9% | 249.01 | 8,781,059 |
-| **Covid19** | Pipeline 1 | SVM (via InceptionV3) | **82.5%** | 82.7% | 82.5% | 82.5% | 55.11 | 27,161,264 |
-| | Pipeline 1 | Naive Bayes (via InceptionV3) | 76.2% | 76.9% | 76.2% | 75.9% | 0.46 | 27,161,264 |
-| | Pipeline 2 | CNN Personnalise | 76.7% | 79.0% | 76.7% | 75.9% | 326.65 | 8,780,546 |
-| **Wildfire**| Pipeline 1 | SVM (via AlexNet) | 99.3% | 99.3% | 99.3% | 99.3% | 321.12 | 61,100,840 |
-| | Pipeline 1 | k-NN (via VGG16) | **99.5%** | 99.5% | 99.5% | 99.5% | 20.82 | 138,357,544 |
-| | Pipeline 2 | CNN Personnalise | 95.3% | 95.4% | 95.3% | 95.3% | 676.31 | 8,780,546 |
-| **DTD** | Pipeline 1 | SVM (via InceptionV3) | **98.8%** | 98.8% | 98.8% | 98.8% | 22.49 | 27,161,264 |
-| | Pipeline 1 | k-NN (via InceptionV3) | **98.8%** | 98.8% | 98.8% | 98.8% | 3.20 | 27,161,264 |
-| | Pipeline 2 | CNN Personnalise | 61.7% | 65.3% | 61.7% | 62.0% | 323.09 | 8,784,137 |
+| **Iris** | Pipeline 1 | k-NN (via VGG16) | **66.93%** | 78.22% | 66.93% | 56.38% | 1.85s | 138 357 544 |
+| | Pipeline 1 | SVM (via InceptionV3) | 66.14% | 68.32% | 66.14% | 58.78% | 16.50s | 27 161 264 |
+| | Pipeline 1 | SVM (via AlexNet) | 57.48% | 55.53% | 57.48% | 56.09% | 66.49s | 61 100 840 |
+| | Pipeline 2 | CNN Personnalise | 49.61% | 51.58% | 49.61% | 50.45% | 278.74s | 8 781 059 |
+| **Covid19** | Pipeline 1 | SVM (via InceptionV3) | **82.51%** | 82.71% | 82.51% | 82.53% | 61.75s | 27 161 264 |
+| | Pipeline 1 | k-NN (via InceptionV3) | 76.68% | 76.68% | 76.68% | 76.68% | 3.27s | 27 161 264 |
+| | Pipeline 1 | Naïve Bayes (via InceptionV3) | 76.23% | 76.91% | 76.23% | 75.86% | 0.39s | 27 161 264 |
+| | Pipeline 1 | SVM (via VGG16) | 70.85% | 70.98% | 70.85% | 70.88% | 164.25s | 138 357 544 |
+| | Pipeline 1 | SVM (via AlexNet) | 69.51% | 73.05% | 69.51% | 68.89% | 97.22s | 61 100 840 |
+| | Pipeline 2 | CNN Personnalise | 60.09% | 78.49% | 60.09% | 54.15% | 496.86s | 8 780 546 |
+| **Wildfire**| Pipeline 1 | k-NN (via VGG16) | **99.45%** | 99.46% | 99.45% | 99.45% | 26.56s | 138 357 544 |
+| | Pipeline 1 | SVM (via AlexNet) | 99.27% | 99.28% | 99.27% | 99.27% | 345.63s | 61 100 840 |
+| | Pipeline 2 | CNN Personnalise | 98.00% | 98.05% | 98.00% | 98.00% | 1012.78s| 8 780 546 |
+| **DTD** | Pipeline 1 | SVM (via InceptionV3) | **98.77%** | 98.83% | 98.77% | 98.76% | 14.10s | 27 161 264 |
+| | Pipeline 1 | k-NN (via InceptionV3) | **98.77%** | 98.83% | 98.77% | 98.76% | 1.35s | 27 161 264 |
+| | Pipeline 1 | SVM (via AlexNet) | 96.91% | 97.19% | 96.91% | 96.89% | 75.14s | 61 100 840 |
+| | Pipeline 2 | CNN Personnalise | 59.88% | 64.72% | 59.88% | 60.30% | 375.75s | 8 784 137 |
 
-### 6.2. Analyse Detaillee par Dataset
+---
 
-#### 6.2.1. Dataset Iris Flowers
-Le dataset Iris possede un faible nombre d'images (421 au total). Le pipeline traditionnel prend une avance nette, notamment le **k-NN couple a VGG16** (Accuracy = **66.9%**). Le classifieur tire avantage des descripteurs tres puissants de VGG16 deja entraine sur ImageNet. Notre CNN personnalise obtient un score de **63.8%**, ce qui est une bonne performance mais montre qu'il a du mal a generaliser par manque de donnees pour s'entrainer correctement a partir de zero.
+## 8. ANALYSE ET INTERPRETATION PAR JEU DE DONNEES
 
-**Interpretation graphique (Matrice de Confusion du CNN)** :
-L'image ci-dessous illustre les predictions du CNN. On observe que le modele confond legerement les classes Versicolor et Virginica (qui se ressemblent enormement visuellement), mais identifie parfaitement la classe Setosa.
-![Matrice de Confusion CNN Iris](reports/confusion_CNN_Personnalisé_Iris.png)
+### 8.1. Jeu de donnees Iris Flowers
+Le dataset Iris possede un faible nombre d'images (421 images, 3 classes). C'est un terrain propice au surapprentissage pour les architectures profondes. Le **k-NN applique aux features de VGG16** obtient le meilleur score avec **66.93%** de precision globale. Le classifieur profite des descripteurs puissants de VGG16 qui est deja capable de distinguer les formes fines de petales grace a ses filtres pre-entraines sur ImageNet. Notre CNN personnalise entraine a partir de zero stagne a **49.61%**. Cela demontre que sans une base de donnees de taille consequente, un CNN from scratch peine a converger vers des descripteurs robustes.
 
-**Interpretation graphique (Courbe d'apprentissage CNN)** :
-![Courbe Apprentissage Iris](reports/courbe_apprentissage_Iris.png)
-La courbe montre une belle baisse de la perte d'entrainement, mais une stagnation sur le test (overfitting naissant du au petit nombre d'images).
+*Visualisation methodologique :*
+La courbe d'apprentissage ci-dessous pour Iris montre l'overfitting typique ou la perte de train diminue mais la perte de validation stagne ou remonte :
+![Courbes Apprentissage Iris](reports/courbe_apprentissage_Iris.png)
 
-#### 6.2.2. Dataset COVID-19 X-Ray
-Sur ce dataset de 743 radiographies thoraciques, le **SVM combine aux caractéristiques d'InceptionV3** produit le meilleur resultat avec **82.5%** d'accuracy. Le CNN personnalise atteint quant a lui **76.7%**. C'est un score eleve qui prouve que notre petit CNN a reussi a developper des filtres convolutionnels adaptes a la detection d' anomalies dans les tissus pulmonaires.
+La matrice de confusion ci-dessous met en evidence que le CNN confond principalement les fleurs Versicolor et Virginica qui sont visuellement tres proches, mais distingue parfaitement la classe Setosa :
+![Matrice de confusion CNN Iris](reports/confusion_CNN_Personnalisé_Iris.png)
 
-**Interpretation graphique (Matrice de Confusion du SVM - InceptionV3)** :
-Ce modele de Machine Learning excelle a distinguer les poumons sains des poumons infectes par le Covid-19, comme le prouve sa diagonale fortement marquee.
-![Matrice de Confusion SVM Covid19](reports/confusion_SVM_via_InceptionV3_Covid19-XRAYS.png)
+### 8.2. Jeu de donnees COVID-19 X-Ray
+Sur ce dataset de 743 radiographies thoraciques, le **SVM combine aux caractéristiques d'InceptionV3** produit le meilleur resultat avec **82.51%** d'accuracy globale. Le CNN personnalise atteint quant a lui **60.09%**. Les structures visuelles de ces radiographies (les opacites pulmonaires) sont tres subtiles et necessitent le pouvoir d'analyse multi-echelle d'InceptionV3. Le classifieur classique SVM parvient alors a separer l'espace de ces descripteurs de facon optimale.
 
-**Interpretation graphique (Courbe d'apprentissage CNN)** :
-Ici, on voit que la courbe de Loss de test diminue conjointement avec celle de train avant de legerement remonter a la 15eme epoque. L'accuracy monte a pres de 80%.
-![Courbe d'apprentissage Covid19](reports/courbe_apprentissage_Covid19-XRAYS.png)
+*Visualisation methodologique :*
+La matrice de confusion ci-dessous montre la reussite du SVM + InceptionV3 pour classer proprement la pathologie :
+![Matrice de confusion SVM Covid19](reports/confusion_SVM_via_InceptionV3_Covid19-XRAYS.png)
 
-#### 6.2.3. Dataset Wildfire Satellite Images
-Les images satellites presentent des contrastes de couleur tres marques entre les zones brulees (couleurs charbon / orange) et les zones vertes de foret. Toutes nos configurations obtiennent donc d'excellents scores. Le **k-NN applique aux features de VGG16** prend la premiere place avec **99.5%** d'accuracy, tandis que notre CNN personnalise atteint **95.3%**. Le CNN montre ici qu'il est capable d'apprendre efficacement si on lui donne une base de donnees de taille convenable (1 832 images).
+La courbe d'apprentissage ci-dessous montre la progression de notre CNN personnalise sur 15 epoques :
+![Courbes Apprentissage Covid19](reports/courbe_apprentissage_Covid19-XRAYS.png)
 
-**Interpretation graphique (Courbe ROC du k-NN - VGG16)** :
-La courbe ROC frole le coin superieur gauche, ce qui donne une aire sous la courbe (AUC) quasiment parfaite de 1.00. Cela signifie que le modele discrimine sans aucune erreur les images d'incendies des images de foret saine.
+### 8.3. Jeu de donnees Wildfire Satellite Images
+Les images satellites presentent des contrastes tres marques (les flammes et les forets calcinees sont tres dissemblables des forets vertes saines). De ce fait, tous nos modeles obtiennent des resultats spectaculaires. Le **k-NN couple a VGG16** obtient **99.45%** d'accuracy. Le SVM sur AlexNet le talonne a **99.27%**. Plus interessant encore, notre **CNN personnalise** atteint un score remarquable de **98.00%**. C'est sur ce dataset, qui est le plus grand (1 832 images), que notre CNN exprime son plein potentiel, prouvant qu'avec une quantite de donnees suffisante, l'entrainement direct devient extremement competitif.
+
+*Visualisation methodologique :*
+La courbe ROC-AUC du k-NN sur VGG16 affiche une aire sous la courbe parfaite de 1.000 :
 ![Courbe ROC kNN Wildfire](reports/roc_k-NN_via_VGG16_Wildfire.png)
 
-**Interpretation graphique (Matrice de Confusion du CNN)** :
-Le CNN classe la tres grande majorite des images correctement, avec seulement de tres rares faux positifs (zones non brulees classees comme incendie, souvent a cause d'ombres ou de sols arides).
-![Matrice de Confusion CNN Wildfire](reports/confusion_CNN_Personnalisé_Wildfire.png)
+La matrice de confusion du CNN montre un taux d'erreur presque nul pour la classification du feu :
+![Matrice de confusion CNN Wildfire](reports/confusion_CNN_Personnalisé_Wildfire.png)
 
-#### 6.2.4. Dataset DTD
-Ce dataset represente le cas de figure le plus difficile : 9 classes d'animaux sauvages complexes pour seulement 540 images (soit 60 images par classe). Les extracteurs pre-entraines d'**InceptionV3 associes a un SVM** resolvent la tache presque parfaitement avec **98.8%** de precision. A l'inverse, le CNN personnalise s'effondre a **61.7%** d'accuracy. Cela met en evidence la difficulte pour un reseau de neurones simple d'apprendre des filtres visuels complexes a partir de zero avec si peu d'exemples d'entrainement.
+La courbe d'apprentissage montre une convergence tres propre du CNN :
+![Courbe apprentissage CNN Wildfire](reports/courbe_apprentissage_Wildfire.png)
 
-**Interpretation graphique (Courbe ROC du SVM via InceptionV3)** :
-Malgre les 9 classes, la methode "One-vs-Rest" affiche des courbes ROC excellentes pour chaque animal (AUC > 0.99), prouvant que l'espace des descripteurs d'InceptionV3 separe naturellement les especes animales.
-![Courbe ROC SVM InceptionV3 DTD](reports/roc_SVM_via_InceptionV3_DTD.png)
+### 8.4. Jeu de donnees DTD (Textures complexes)
+Le dataset DTD propose 9 classes d'animaux pour seulement 540 images au total (soit environ 60 images par classe). La difficulte est extreme pour notre CNN personnalise qui echoue et stagne a **59.88%** d'accuracy globale. A l'inverse, la puissance d'extraction d'**InceptionV3 couplée a un SVM ou a un k-NN** permet de resoudre le probleme presque parfaitement avec un score exceptionnel de **98.77%**. La richesse pre-apprise des extracteurs convolutifs est ici indispensable face au manque de donnees.
 
-**Interpretation graphique (Matrice de Confusion du k-NN InceptionV3)** :
-La diagonale est ici presque immaculee. Les seules petites erreurs proviennent des classes tres similaires visuellement (ex: pelages d'animaux confondus).
+*Visualisation methodologique :*
+La courbe ROC du SVM sur InceptionV3 montre une distinction parfaite sur chaque classe grace a l'approche One-vs-Rest :
+![Courbe ROC SVM DTD](reports/roc_SVM_via_InceptionV3_DTD.png)
+
+La matrice de confusion du k-NN sur InceptionV3 montre un alignement parfait de la diagonale :
 ![Matrice de confusion kNN DTD](reports/confusion_k-NN_via_InceptionV3_DTD.png)
 
 ---
 
-## 7. Synthese Visuelle de la Comparaison
+## 9. SYNTHESE VISUELLE ET COMPARAISON GLOBALE
 
 Les deux graphiques ci-dessous permettent de comparer l'ensemble de nos resultats en un coup d'oeil.
 
-### 7.1. Comparaison detaillee par Jeu de Donnees
-Ce graphique montre le classement des modeles pour chacun des quatre datasets. Le CNN personnalise est mis en valeur en bleu electrique. On y voit clairement sa superiorite relative sur les gros datasets et ses faiblesses sur les petits, face aux algorithmes traditionnels ultra-stables.
-![Comparaison des performances par Dataset](reports/comparatif_global_accuracy.png)
+Le graphique ci-dessous montre la superiorite quasi-systematique du Pipeline 1 (Transfer Learning + ML traditionnel en gris) sur le Pipeline 2 (CNN personnalise en bleu) :
+![Comparatif global accuracy](reports/comparatif_global_accuracy.png)
 
-### 7.2. Classement Final Global
-Ce graphique presente le classement moyen de chaque architecture sur l'ensemble des jeux de donnees. Le trio de tete est occupe par le SVM sur InceptionV3 et VGG16, confirmant que la synergie entre Deep Learning (pour l'extraction) et Machine Learning classique (pour la classification) reste la strategie la plus robuste.
-![Classement Final Global Moyen](reports/classement_final_moyen.png)
+Le classement final global moyen met en evidence le trio de tete domine par le SVM et le k-NN sur InceptionV3 et VGG16, tandis que le CNN se positionne en retrait en raison de sa sensibilite a la taille des jeux de donnees :
+![Classement final moyen](reports/classement_final_moyen.png)
 
 ---
 
-## 8. Discussion Critique et Analyse des Compromis
+## 10. DISCUSSION CRITIQUE ET ANALYSE DES COMPROMIS
 
-### 8.1. Efficacite du Transfer Learning (Pipeline 1)
-Le Transfer Learning (Pipeline 1) se revele etre l'approche la plus stable et la plus performante. Il surpasse le CNN personnalise sur tous les jeux de donnees, en particulier sur Iris et DTD ou le volume d'images est tres reduit. Le fait d'utiliser des extracteurs entraines sur ImageNet (plus d'un million d'images d'objets du quotidien) permet de beneficier d'un espace de representation universel tres riche que les classifieurs classiques n'ont plus qu'a decouper lineairement ou non.
+### 10.1. Efficacite du Transfer Learning (Pipeline 1)
+Le Transfer Learning (Pipeline 1) s'impose comme le grand vainqueur de cette etude de maniere systematique. Son avantage est flagrant sur les petits jeux de donnees (Iris, DTD) ou un apprentissage from scratch souffre prematurement d'un severe surapprentissage. Le fait d'utiliser des extracteurs de caracteristiques pre-entraines sur ImageNet (plus de 1.2 million d'images et 1000 classes d'objets du quotidien) permet de beneficier d'un espace de representation visuel (formes, contours, contrastes, textures) deja universellement optimise.
 
-### 8.2. Cout d'Apprentissage et Temps d'Entrainement
-Les modeles traditionnels (SVM, k-NN) sur descripteurs pre-extraits s'entrainent en une fraction de seconde (de 0.5 a 20 secondes). Cependant, la phase initiale d'extraction (faire passer toutes les images dans VGG16 ou InceptionV3) est lourde et longue en CPU. Pour le CNN personnalise, le temps d'entrainement est le plus lourd (jusqu'a 11 minutes sur CPU pour 15 epoques), car il doit ajuster tous ses poids en meme temps a chaque iteration.
+### 10.2. Cout d'Apprentissage et Temps d'Entrainement
+Les modeles traditionnels (SVM, k-NN) sur descripteurs pre-extraits s'entrainent en une fraction de seconde (de 0.3 a 30 secondes). En revanche, la phase initiale d'extraction (passage de toutes les images dans les modeles pre-entraines) represente le goulot d'etranglement.
+Pour le CNN du Pipeline 2, le temps d'entrainement est extremement eleve (plus de 16 minutes sur CPU pour 15 epoques sur le dataset Wildfire). L'ajustement simultane des 8.7 millions de parametres requiert des ressources de calcul massives (GPU) sous peine de ralentir considerablement la phase de R&D.
 
-### 8.3. Taille des Modeles et Contraintes Memoires
-Bien que le Pipeline 1 soit extremement precis, il impose de manipuler de tres gros modeles. Par exemple, **VGG16 necessite 138 millions de parametres** (ce qui represente un fichier de stockage de plus de 500 Mo). Notre **CNN personnalise, quant a lui, ne necessite que 8.7 millions de parametres** (environ 35 Mo sur le disque). Cela en fait une option de choix pour un deploiement sur des systemes embarques legers (drones, micro-ordinateurs) ou la memoire vive est limitee.
+### 10.3. Taille des Modeles et Deploiement Embarque
+Bien que le Pipeline 1 soit performant, il impose une contrainte memoire majeure :
+- **VGG16 possede 138 millions de parametres** (fichier de stockage de plus de 500 Mo).
+- **AlexNet possede 61 millions de parametres** (environ 240 Mo).
+- **InceptionV3 possede 27 millions de parametres** (environ 108 Mo).
+
+Notre **CNN personnalise** ne necessite que **8.7 millions de parametres** (taille memoire sur disque d'environ 35 Mo). Ce modele est donc de 3 a 15 fois plus compact que les modeles de transfert. Pour un deploiement sur des architectures embarquees ou l'espace memoire et la bande passante sont limites (comme sur un drone autonome ou un capteur intelligent), le CNN personnalise reste un compromis extremement attractif sous reserve qu'il ait ete entraine sur une quantite suffisante d'images.
 
 ---
 
-## 9. Conclusion et Recommandations d'Usage
+## CONCLUSION ET RECOMMANDATIONS
 
-En reponse a notre problematique de depart, nous formulons les recommandations suivantes :
-- **Recommandation 1** : Si la base d'images d'entrainement est petite (moins de 1000 images) et que les ressources de calcul sont limitees, le **Pipeline 1 (InceptionV3 ou VGG16 + SVM/k-NN)** est l'approche ideale. Elle assure une precision maximale et un temps d'entrainement presque instantane.
-- **Recommandation 2** : Si le volume d'images est important et que la taille memoire finale du modele est un facteur limitant (par exemple pour du deploiement embarque), le **Pipeline 2 (CNN personnalise)** est a privilegier. Bien que son entrainement soit plus long a converger, il permet d'obtenir un modele tres compact, directement specifique aux structures de vos images de travail.
+En reponse aux problematiques etablies, nous proposons les recommandations d'usage suivantes :
+1.  **Volume de donnees reduit (< 1000 images) :** Il faut obligatoirement privilegier le **Pipeline 1 (InceptionV3 ou VGG16 associes a un classifieur SVM ou k-NN)**. C'est l'assurance d'obtenir une precision elevee en evitant le surapprentissage tout en minimisant le temps d'apprentissage.
+2.  **Volume de donnees important (> 5000 images) :** Le **Pipeline 2 (CNN personnalise)** est a considerer, surtout si la taille de stockage finale et l'empreinte memoire du modele sont des contraintes de deploiement critiques.
+3.  **Temps de calcul limite :** Les classifieurs classiques couples au cache d'extraction permettent d'iterer et de tester des modeles en quelques secondes sur de simples architectures CPU.
+
+---
+
+## LISTE DES FIGURES
+
+- **Figure 1 :** Courbe d'apprentissage du CNN personnalisé sur Iris
+- **Figure 2 :** Matrice de confusion du CNN personnalisé sur Iris
+- **Figure 3 :** Matrice de confusion SVM + InceptionV3 sur Covid19
+- **Figure 4 :** Courbes d'apprentissage du CNN personnalisé sur Covid19
+- **Figure 5 :** Courbe ROC-AUC du k-NN sur VGG16 (Wildfire)
+- **Figure 6 :** Matrice de confusion du CNN personnalisé (Wildfire)
+- **Figure 7 :** Courbes ROC du SVM sur InceptionV3 (DTD)
+- **Figure 8 :** Matrice de confusion du k-NN sur InceptionV3 (DTD)
+- **Figure 9 :** Comparaison des performances par Dataset (Pipeline 1 vs Pipeline 2)
+- **Figure 10 :** Classement Final Global Moyen sur tous les Datasets
